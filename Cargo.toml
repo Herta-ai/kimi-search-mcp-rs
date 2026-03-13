@@ -1,0 +1,28 @@
+[package]
+name = "kimi-mcp-rust"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+# 核心 Web 框架及异步运行时
+tokio = { version = "1.36", features = ["macros", "rt-multi-thread"] }
+axum = "0.7"
+tower-http = { version = "0.5", features = ["cors"] }
+
+# 序列化
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# HTTP 客户端 (必须使用 rustls-tls，禁用 default-features 以去除 openssl 依赖，方便静态编译)
+reqwest = { version = "0.12", default-features = false, features = ["rustls-tls", "json"] }
+
+[profile.release]
+opt-level = 3              # 最高优化级别
+lto = true                 # 启用链接时优化
+codegen-units = 1          # 单代码单元，提升优化效果
+panic = 'abort'            # 避免 panic 展开代码
+strip = true               # Rust 1.59+ 自动去除符号
+debug = false              # 不生成调试信息
+debug-assertions = false   # 关闭调试断言
+overflow-checks = false    # 关闭溢出检查
+incremental = false        # 禁用增量编译
