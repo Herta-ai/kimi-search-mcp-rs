@@ -17,7 +17,7 @@ serde_json = "1.0"
 reqwest = { version = "0.12", default-features = false, features = ["rustls-tls", "json"] }
 
 [profile.release]
-opt-level = 3              # 最高优化级别
+opt-level = "z"            # 最高优化级别
 lto = true                 # 启用链接时优化
 codegen-units = 1          # 单代码单元，提升优化效果
 panic = 'abort'            # 避免 panic 展开代码

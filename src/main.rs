@@ -8,6 +8,7 @@ use axum::{
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
+use std::env;
 use tower_http::cors::{Any, CorsLayer};
 
 // --- 数据结构 ---
@@ -242,7 +243,7 @@ async fn mcp_post_handler(
     Query(query): Query<McpQuery>,
     Json(payload): Json<RpcRequest>,
 ) -> Response {
-    let model = query.model.unwrap_or_else(|| "kimi-k2-0905-preview".to_string());
+    let model = query.model.unwrap_or_else(|| "kimi-k2-turbo-preview".to_string());
 
     if let Some(response) = process_message(payload, &query.api_key, &model).await {
         // 正常返回 JSON
@@ -257,8 +258,41 @@ async fn mcp_get_handler() -> Response {
     (StatusCode::METHOD_NOT_ALLOWED, "SSE stream not supported at this endpoint").into_response()
 }
 
+fn parse_port() -> u16 {
+    let args: Vec<String> = env::args().collect();
+    let mut port = 3000u16;
+
+    let mut i = 1;
+    while i < args.len() {
+        match args[i].as_str() {
+            "-p" | "--port" => {
+                if i + 1 < args.len() {
+                    if let Ok(p) = args[i + 1].parse::<u16>() {
+                        port = p;
+                    } else {
+                        eprintln!("Invalid port number: {}", args[i + 1]);
+                        std::process::exit(1);
+                    }
+                    i += 2;
+                } else {
+                    eprintln!("Option -p requires a port number");
+                    std::process::exit(1);
+                }
+            }
+            _ => {
+                eprintln!("Unknown option: {}", args[i]);
+                eprintln!("Usage: {} [-p <port>] [--port <port>]", args[0]);
+                std::process::exit(1);
+            }
+        }
+    }
+    port
+}
+
 #[tokio::main]
 async fn main() {
+    let port = parse_port();
+
     // 配置 CORS
     let cors = CorsLayer::new()
         .allow_origin(Any)
@@ -271,7 +305,8 @@ async fn main() {
         .route("/mcp", get(mcp_get_handler))
         .layer(cors);
 
-    println!("Server running on http://0.0.0.0:3000");
-    let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
+    let addr = format!("0.0.0.0:{}", port);
+    println!("Server running on http://{}", addr);
+    let listener = tokio::net::TcpListener::bind(&addr).await.unwrap();
     axum::serve(listener, app).await.unwrap();
 }

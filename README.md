@@ -65,12 +65,28 @@ cargo run --release
 
 服务将在 `http://localhost:3000` 启动。
 
+#### 命令行参数
+
+| 参数 | 说明 | 示例 |
+|------|------|------|
+| `-p, --port <PORT>` | 指定监听端口，默认 3000 | `cargo run --release -- -p 8080` |
+
+```bash
+# 使用默认端口 3000
+cargo run --release
+
+# 指定端口 8080
+cargo run --release -- -p 8080
+# 或
+cargo run --release -- --port 8080
+```
+
 ### 📡 API 使用
 
 #### MCP 端点
 
 ```
-POST http://localhost:3000/mcp?apiKey=YOUR_KIMI_API_KEY&model=kimi-k2-0905-preview
+POST http://localhost:3000/mcp?apiKey=YOUR_KIMI_API_KEY&model=kimi-k2-turbo-preview
 ```
 
 #### 请求示例
@@ -137,13 +153,9 @@ POST http://localhost:3000/mcp?apiKey=YOUR_KIMI_API_KEY&model=kimi-k2-0905-previ
 | 参数 | 必填 | 默认值 | 说明 |
 |------|:----:|--------|------|
 | `apiKey` | ✅ | - | Moonshot AI API Key |
-| `model` | ❌ | `kimi-k2-0905-preview` | 使用的模型名称 |
+| `model` | ❌ | `kimi-k2-turbo-preview` | 使用的模型名称 |
 
-支持的模型列表：
-- `kimi-k2-0905-preview`
-- `kimi-k1-8k`
-- `kimi-k1-32k`
-- `kimi-k1-128k`
+[支持的模型列表](https://platform.moonshot.cn/docs/introduction#%E6%A8%A1%E5%9E%8B%E5%88%97%E8%A1%A8)
 
 ### 🤝 客户端集成
 
@@ -227,12 +239,28 @@ cargo run --release
 
 Server starts at `http://localhost:3000`.
 
+#### Command Line Options
+
+| Option | Description | Example |
+|--------|-------------|---------|
+| `-p, --port <PORT>` | Specify listening port, default 3000 | `cargo run --release -- -p 8080` |
+
+```bash
+# Use default port 3000
+cargo run --release
+
+# Specify port 8080
+cargo run --release -- -p 8080
+# or
+cargo run --release -- --port 8080
+```
+
 ### 📡 API Usage
 
 #### MCP Endpoint
 
 ```
-POST http://localhost:3000/mcp?apiKey=YOUR_KIMI_API_KEY&model=kimi-k2-0905-preview
+POST http://localhost:3000/mcp?apiKey=YOUR_KIMI_API_KEY&model=kimi-k2-turbo-preview
 ```
 
 #### Tool: `search`
@@ -262,7 +290,9 @@ Search the web using Kimi's built-in web search capability.
 | Parameter | Required | Default | Description |
 |-----------|:--------:|---------|-------------|
 | `apiKey` | ✅ | - | Moonshot AI API Key |
-| `model` | ❌ | `kimi-k2-0905-preview` | Model to use |
+| `model` | ❌ | `kimi-k2-turbo-preview` | Model to use |
+
+[Support Model](https://platform.moonshot.cn/docs/introduction#%E6%A8%A1%E5%9E%8B%E5%88%97%E8%A1%A8)
 
 ### 📄 License
 
