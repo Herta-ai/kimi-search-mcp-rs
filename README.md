@@ -52,6 +52,13 @@ docker build -t kimi-search-mcp .
 docker run -d -p 3000:3000 kimi-search-mcp
 ```
 
+或者从ghcr拉取
+
+```bash
+docker pull ghcr.io/herta-ai/kimi-search-mcp-rs:latest
+docker run -d -p 3000:3000 ghcr.io/herta-ai/kimi-search-mcp-rs
+```
+
 #### 方式二：本地编译
 
 ```bash
