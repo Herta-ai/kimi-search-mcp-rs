@@ -5,7 +5,7 @@ edition = "2021"
 
 [dependencies]
 # 核心 Web 框架及异步运行时
-tokio = { version = "1.36", features = ["macros", "rt-multi-thread"] }
+tokio = { version = "1.36", features = ["macros", "rt-multi-thread", "signal"] }
 axum = "0.7"
 tower-http = { version = "0.5", features = ["cors"] }
 

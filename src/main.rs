@@ -9,6 +9,7 @@ use reqwest::Client;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use std::env;
+use tokio::signal;
 use tower_http::cors::{Any, CorsLayer};
 
 // --- 数据结构 ---
@@ -82,7 +83,7 @@ async fn handle_search_tool_call(
     println!("[Tool Call] search called with query: {}", query_text);
 
     let client = Client::new();
-    
+
     // 1. 初始化对话历史 (messages)
     let mut messages = vec![
         json!({
@@ -92,7 +93,7 @@ async fn handle_search_tool_call(
         json!({
             "role": "user",
             "content": query_text
-        })
+        }),
     ];
 
     // 2. 声明内置联网搜索工具
@@ -136,7 +137,7 @@ async fn handle_search_tool_call(
         // 4. 判断是否触发了工具调用
         if finish_reason == "tool_calls" || message.get("tool_calls").is_some() {
             println!("[Tool Call] Kimi triggered $web_search, passing context back to model...");
-            
+
             // (1) 必须先把 assistant 的回复原样加进 messages 中
             messages.push(message.clone());
 
@@ -146,7 +147,7 @@ async fn handle_search_tool_call(
                     let tool_call_id = tool_call["id"].as_str().unwrap_or("");
                     let function_name = tool_call["function"]["name"].as_str().unwrap_or("");
                     let arguments_str = tool_call["function"]["arguments"].as_str().unwrap_or("{}");
-                    
+
                     // 将入参对象（本身已是 json 字符串）作为内容填入 role: tool 中
                     messages.push(json!({
                         "role": "tool",
@@ -156,7 +157,7 @@ async fn handle_search_tool_call(
                     }));
                 }
             }
-            
+
             // 继续下一轮循环
             continue;
         }
@@ -177,11 +178,7 @@ async fn handle_search_tool_call(
 
 // --- MCP 协议处理 ---
 
-async fn process_message(
-    req: RpcRequest,
-    api_key: &str,
-    model: &str,
-) -> Option<RpcResponse> {
+async fn process_message(req: RpcRequest, api_key: &str, model: &str) -> Option<RpcResponse> {
     match req.method.as_str() {
         // 1. 初始化握手
         "initialize" => Some(RpcResponse::success(
@@ -216,14 +213,24 @@ async fn process_message(
 
         // 4. 调用工具
         "tools/call" => {
-            let name = req.params.as_ref().and_then(|p| p.get("name")).and_then(|n| n.as_str());
-            let query = req.params.as_ref()
+            let name = req
+                .params
+                .as_ref()
+                .and_then(|p| p.get("name"))
+                .and_then(|n| n.as_str());
+            let query = req
+                .params
+                .as_ref()
                 .and_then(|p| p.get("arguments"))
                 .and_then(|args| args.get("query"))
                 .and_then(|q| q.as_str());
 
             if name != Some("search") {
-                return Some(RpcResponse::error(req.id, -32603, "Unknown tool".to_string()));
+                return Some(RpcResponse::error(
+                    req.id,
+                    -32603,
+                    "Unknown tool".to_string(),
+                ));
             }
 
             match handle_search_tool_call(query, api_key, model).await {
@@ -233,7 +240,11 @@ async fn process_message(
         }
 
         // 未知方法
-        _ => Some(RpcResponse::error(req.id, -32601, "Method not found".to_string())),
+        _ => Some(RpcResponse::error(
+            req.id,
+            -32601,
+            "Method not found".to_string(),
+        )),
     }
 }
 
@@ -243,7 +254,9 @@ async fn mcp_post_handler(
     Query(query): Query<McpQuery>,
     Json(payload): Json<RpcRequest>,
 ) -> Response {
-    let model = query.model.unwrap_or_else(|| "kimi-k2-turbo-preview".to_string());
+    let model = query
+        .model
+        .unwrap_or_else(|| "kimi-k2-turbo-preview".to_string());
 
     if let Some(response) = process_message(payload, &query.api_key, &model).await {
         // 正常返回 JSON
@@ -255,7 +268,11 @@ async fn mcp_post_handler(
 }
 
 async fn mcp_get_handler() -> Response {
-    (StatusCode::METHOD_NOT_ALLOWED, "SSE stream not supported at this endpoint").into_response()
+    (
+        StatusCode::METHOD_NOT_ALLOWED,
+        "SSE stream not supported at this endpoint",
+    )
+        .into_response()
 }
 
 fn parse_port() -> u16 {
@@ -308,5 +325,36 @@ async fn main() {
     let addr = format!("0.0.0.0:{}", port);
     println!("Server running on http://{}", addr);
     let listener = tokio::net::TcpListener::bind(&addr).await.unwrap();
-    axum::serve(listener, app).await.unwrap();
+    axum::serve(listener, app)
+        .with_graceful_shutdown(shutdown_signal())
+        .await
+        .unwrap();
+}
+/// 监听退出信号的函数
+async fn shutdown_signal() {
+    let ctrl_c = async {
+        signal::ctrl_c()
+            .await
+            .expect("failed to install Ctrl+C handler");
+    };
+
+    #[cfg(unix)]
+    let terminate = async {
+        signal::unix::signal(signal::unix::SignalKind::terminate())
+            .expect("failed to install signal handler")
+            .recv()
+            .await;
+    };
+
+    #[cfg(not(unix))]
+    let terminate = std::future::pending::<()>();
+
+    tokio::select! {
+        _ = ctrl_c => {
+            println!("Received Ctrl+C (SIGINT), starting graceful shutdown...");
+        },
+        _ = terminate => {
+            println!("Received Docker Stop (SIGTERM), starting graceful shutdown...");
+        },
+    }
 }
