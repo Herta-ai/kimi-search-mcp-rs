@@ -1,13 +1,18 @@
 [package]
-name = "kimi-mcp-rust"
+name = "web-search-mcp"
 version = "0.1.0"
 edition = "2021"
+
+[[bin]]
+name = "web-search-mcp"
+path = "src/main.rs"
 
 [dependencies]
 # 核心 Web 框架及异步运行时
 tokio = { version = "1.36", features = ["macros", "rt-multi-thread", "signal"] }
 axum = "0.7"
 tower-http = { version = "0.5", features = ["cors"] }
+async-trait = "0.1"
 
 # 序列化
 serde = { version = "1.0", features = ["derive"] }

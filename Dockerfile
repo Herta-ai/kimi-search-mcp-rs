@@ -1,6 +1,6 @@
 # 阶段 1：构建环境
 # 使用基于 Alpine 的 Rust 镜像原生支持 musl
-FROM rust:alpine AS builder
+FROM docker.1ms.run/rust:alpine AS builder
 
 # 安装构建依赖
 RUN apk add --no-cache musl-dev
@@ -26,15 +26,15 @@ RUN cargo build --release
 
 # 阶段 2：极简运行环境
 # gcr.io/distroless/static-debian12 是目前最小巧且安全的静态镜像（不到 3MB）
-FROM gcr.io/distroless/static-debian12:latest
+FROM gcr.nju.edu.cn/distroless/static-debian12:latest
 
 WORKDIR /app
 
 # 从 builder 拷贝编译出的静态二进制文件
-COPY --from=builder /app/target/release/kimi-mcp-rust /app/kimi-mcp-rust
+COPY --from=builder /app/target/release/web-search-mcp /app/web-search-mcp
 
 # 暴露端口
 EXPOSE 3000
 
 # 运行二进制文件
-CMD ["/app/kimi-mcp-rust"]
+CMD ["/app/web-search-mcp"]

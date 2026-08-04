@@ -20,28 +20,28 @@ jobs:
         include:
           - target: x86_64-unknown-linux-musl
             os: ubuntu-latest
-            artifact_name: kimi-mcp-rust
-            asset_name: kimi-mcp-rust-linux-amd64
+            artifact_name: web-search-mcp
+            asset_name: web-search-mcp-linux-amd64
           - target: aarch64-unknown-linux-musl
             os: ubuntu-latest
-            artifact_name: kimi-mcp-rust
-            asset_name: kimi-mcp-rust-linux-arm64
+            artifact_name: web-search-mcp
+            asset_name: web-search-mcp-linux-arm64
           - target: x86_64-pc-windows-msvc
             os: windows-latest
-            artifact_name: kimi-mcp-rust.exe
-            asset_name: kimi-mcp-rust-windows-amd64.exe
+            artifact_name: web-search-mcp.exe
+            asset_name: web-search-mcp-windows-amd64.exe
           - target: aarch64-pc-windows-msvc
             os: windows-latest
-            artifact_name: kimi-mcp-rust.exe
-            asset_name: kimi-mcp-rust-windows-arm64.exe
+            artifact_name: web-search-mcp.exe
+            asset_name: web-search-mcp-windows-arm64.exe
           - target: x86_64-apple-darwin
             os: macos-latest
-            artifact_name: kimi-mcp-rust
-            asset_name: kimi-mcp-rust-darwin-amd64
+            artifact_name: web-search-mcp
+            asset_name: web-search-mcp-darwin-amd64
           - target: aarch64-apple-darwin
             os: macos-latest
-            artifact_name: kimi-mcp-rust
-            asset_name: kimi-mcp-rust-darwin-arm64
+            artifact_name: web-search-mcp
+            asset_name: web-search-mcp-darwin-arm64
 
     steps:
       - name: Checkout repository

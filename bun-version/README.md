@@ -1,4 +1,4 @@
-# 🌐 Web Search MCP (Rust)
+# 🌐 Web Search MCP
 
 <p align="center">
   <strong>🔍 多引擎 AI 联网搜索 MCP 服务 — 一站式接入，随心切换</strong>
@@ -14,11 +14,11 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Rust-1.75+-orange?style=for-the-badge&logo=rust" alt="Rust">
-  <img src="https://img.shields.io/badge/Axum-0.7-black?style=for-the-badge" alt="Axum">
+  <img src="https://img.shields.io/badge/runtime-Bun-000000?style=for-the-badge&logo=bun&logoColor=white" alt="Bun">
+  <img src="https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript">
   <img src="https://img.shields.io/badge/MCP-2026--07--28-FF6B6B?style=for-the-badge" alt="MCP">
   <img src="https://img.shields.io/badge/license-MIT-green?style=for-the-badge" alt="License">
-  <img src="https://img.shields.io/badge/Docker-Ready-2496ED?style=for-the-badge&logo=docker" alt="Docker">
+  <img src="https://img.shields.io/badge/dependencies-0-brightgreen?style=for-the-badge" alt="Zero Dependencies">
 </p>
 
 ---
@@ -31,9 +31,10 @@
 | 🎯 **动态工具发现** | 按需传参，只暴露你配置了的搜索引擎 |
 | 🔀 **默认搜索别名** | `default-search=kimi` 即可生成通用 `web-search` 工具 |
 | 📡 **MCP 协议** | 完整实现 Model Context Protocol (2026-07-28) |
-| 🚀 **轻量高效** | Rust 原生编写，静态编译无运行时依赖，启动快、内存占用低 |
-| 🐳 **Docker 支持** | 开箱即用的 Dockerfile，极简容器化部署 |
-| 🧩 **易于扩展** | 实现 `SearchProvider` trait + 注册一行代码 = 新增搜索引擎 |
+| ⚡ **零运行时依赖** | 全部使用原生 `fetch`，无第三方依赖 |
+| 🚀 **轻量高效** | 基于 Bun 运行时，启动快、内存占用低 |
+| 🐳 **Docker 支持** | 开箱即用的 Dockerfile，便于容器化部署 |
+| 🧩 **易于扩展** | 实现接口 + 注册一行代码 = 新增搜索引擎 |
 
 ---
 
@@ -91,38 +92,36 @@
 
 ### 📋 环境要求
 
-- [Rust](https://www.rust-lang.org/) >= 1.75
+- [Bun](https://bun.sh) >= 1.0.0
 - 至少一个搜索引擎的 API Key
+
+### 📦 安装依赖
+
+```bash
+bun install
+```
 
 ### 🏃 开发运行
 
 ```bash
-cargo run
-```
-
-指定端口运行：
-
-```bash
-cargo run -- -p 8080
-# 或
-cargo run -- --port 8080
+bun run dev
 ```
 
 服务启动后即可使用：
 
 ```
-🚀 MCP Server running at http://0.0.0.0:3000
+🚀 MCP Server running at http://localhost:3000
 🔑 Example: POST http://localhost:3000/mcp?kimi-apiKey=YOUR_KEY
 📚 Supported providers: kimi, zai, volces, tencentmaas, aliyuncs
 ```
 
-### 🔨 构建发布版本
+### 🔨 构建可执行文件
 
 ```bash
-cargo build --release
+bun run build
 ```
 
-编译后的可执行文件位于 `target/release/web-search-mcp` (Windows 下为 `web-search-mcp.exe`)。
+编译后的可执行文件位于 `dist/kimi-search-mcp`
 
 ---
 
@@ -362,19 +361,23 @@ services:
 ## 📁 项目结构
 
 ```
-web-search-mcp-rs/
+web-search-mcp/
 ├── src/
-│   ├── main.rs               # 🚪 入口文件与 MCP HTTP 服务器（动态路由）
-│   └── provider/             # 🔌 搜索引擎 Provider 模块
-│       ├── mod.rs            #   ├─ Trait 定义、公共类型与注册表
-│       ├── kimi.rs           #   ├─ 🌙 Kimi (Moonshot)
-│       ├── zai.rs            #   ├─ 🧠 智谱 (BigModel)
-│       ├── volces.rs         #   ├─ 🌋 火山引擎 (豆包)
-│       ├── tencentmaas.rs    #   ├─ ☁️ 腾讯云 (混元)
-│       └── aliyuncs.rs       #   └─ 🟠 阿里云 (通义千问)
-├── Cargo.toml                # ⚙️ Rust 包与依赖配置
+│   ├── index.ts              # 🚪 入口文件
+│   ├── server.ts             # 🌐 MCP HTTP 服务器（动态路由）
+│   ├── types.ts              # 📝 公共类型定义
+│   ├── registry.ts           # 📦 Provider 注册表 & 别名处理
+│   └── providers/            # 🔌 搜索引擎 Provider 目录
+│       ├── base.ts           #   ├─ 接口定义 & 抽象基类
+│       ├── kimi.ts           #   ├─ 🌙 Kimi (Moonshot)
+│       ├── zai.ts            #   ├─ 🧠 智谱 (BigModel)
+│       ├── volces.ts         #   ├─ 🌋 火山引擎 (豆包)
+│       ├── tencentmaas.ts    #   ├─ ☁️ 腾讯云 (混元)
+│       └── aliyuncs.ts       #   └─ 🟠 阿里云 (通义千问)
+├── dist/                     # 📦 编译输出
 ├── Dockerfile                # 🐳 Docker 构建文件
-└── .github/                  # 🚀 CI/CD 自动化构建与发布
+├── package.json              # ⚙️ 项目配置
+└── tsconfig.json             # 🔧 TypeScript 配置
 ```
 
 ---
@@ -383,42 +386,33 @@ web-search-mcp-rs/
 
 只需 **3 步** 即可新增一个搜索引擎：
 
-**① 创建 Provider 文件** `src/provider/my_engine.rs`
+**① 创建 Provider 文件** `src/providers/my-engine.ts`
 
-```rust
-use super::{SearchProvider, WebSearchResult};
-use std::collections::HashMap;
+```typescript
+import { BaseSearchProvider } from "./base";
+import type { WebSearchResult } from "../types";
 
-pub struct MyEngineProvider;
+export class MyEngineProvider extends BaseSearchProvider {
+  readonly name = "myengine";
+  readonly toolName = "myengine-search";
+  readonly description = "我的自定义搜索引擎";
+  readonly requiredParams = ["myengine-apiKey"];
+  readonly optionalParams = [];
 
-#[async_trait::async_trait]
-impl SearchProvider for MyEngineProvider {
-    fn name(&self) -> &str { "myengine" }
-    fn tool_name(&self) -> &str { "myengine-search" }
-    fn description(&self) -> &str { "我的自定义搜索引擎" }
-    fn required_params(&self) -> &[&str] { &["myengine-apiKey"] }
-
-    async fn search(
-        &self,
-        query: &str,
-        params: &HashMap<String, String>,
-        client: &reqwest::Client,
-    ) -> Result<WebSearchResult, String> {
-        let api_key = params.get("myengine-apiKey").unwrap();
-        // ... 调用搜索 API ...
-        Ok(WebSearchResult::text("搜索结果"))
-    }
+  async search(query: string, urlParams: URLSearchParams): Promise<WebSearchResult> {
+    const apiKey = urlParams.get("myengine-apiKey")!;
+    // ... 调用搜索 API ...
+    return { content: [{ type: "text", text: "搜索结果" }] };
+  }
 }
 ```
 
-**② 在注册表中注册** `src/provider/mod.rs`
+**② 在注册表中注册** `src/registry.ts`
 
-```rust
-pub mod my_engine;
-pub use my_engine::MyEngineProvider;
+```typescript
+import { MyEngineProvider } from "./providers/my-engine";
 
-// 在 build_registry 中添加：
-registry.register(Box::new(MyEngineProvider));
+registry.register(new MyEngineProvider());
 ```
 
 **③ 完成！** 传入 `myengine-apiKey=xxx` 即可使用 ✅
@@ -429,11 +423,11 @@ registry.register(Box::new(MyEngineProvider));
 
 | 技术 | 用途 |
 |:---:|------|
-| [Rust](https://www.rust-lang.org/) | ⚡ 极致性能与内存安全 |
-| [Axum](https://github.com/tokio-rs/axum) | 🌐 高性能异步 Web 框架 |
-| [Tokio](https://tokio.rs/) | ⏳ 异步运行时 |
-| [Reqwest](https://docs.rs/reqwest) | 📡 静态编译友好 HTTP 客户端 (rustls) |
+| [Bun](https://bun.sh) | ⚡ 高性能 JavaScript 运行时 |
+| [TypeScript](https://www.typescriptlang.org/) | 🔒 类型安全 |
 | [MCP Protocol](https://modelcontextprotocol.io/) | 📡 Model Context Protocol (2026-07-28) |
+
+> **零运行时依赖** — 所有 HTTP 请求均使用原生 `fetch` API
 
 ---
 
@@ -444,5 +438,5 @@ registry.register(Box::new(MyEngineProvider));
 ---
 
 <p align="center">
-  Made with ❤️ using <a href="https://www.rust-lang.org/">Rust</a> — 🌐 搜索无界，引擎随心
+  Made with ❤️ using <a href="https://bun.sh">Bun</a> — 🌐 搜索无界，引擎随心
 </p>
